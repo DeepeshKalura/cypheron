@@ -5,18 +5,15 @@ import { WalletProvider } from "@/lib/wallet-provider"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-export const metadata: Metadata = {
-  title: "CryptoVault - Decentralized Data Marketplace",
-  description:
-
 import { DM_Sans as V0_Font_DM_Sans, Space_Mono as V0_Font_Space_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 
-// Initialize fonts
-const _dmSans = V0_Font_DM_Sans({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900","1000"] })
-const _spaceMono = V0_Font_Space_Mono({ subsets: ['latin'], weight: ["400","700"] })
-const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200","300","400","500","600","700","800","900"] })
+const _dmSans = V0_Font_DM_Sans({ subsets: ['latin'], weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"], variable: '--font-dm-sans' })
+const _spaceMono = V0_Font_Space_Mono({ subsets: ['latin'], weight: ["400", "700"], variable: '--font-space-mono' })
+const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200", "300", "400", "500", "600", "700", "800", "900"], variable: '--font-source-serif-4' })
 
-"Trade encrypted data on the blockchain with zero-knowledge proofs. Secure, trustless, and verifiable data marketplace powered by Sui.",
+export const metadata: Metadata = {
+  title: "CryptoVault - Decentralized Data Marketplace",
+  description: "Trade encrypted data on the blockchain with zero-knowledge proofs. Secure, trustless, and verifiable data marketplace powered by Sui.",
   generator: "v0.app",
   icons: {
     icon: [
@@ -44,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`font-sans antialiased bg-background text-foreground`}>
+      <body className={`font-sans antialiased bg-background text-foreground ${_dmSans.variable} ${_spaceMono.variable} ${_sourceSerif_4.variable}`}>
         <SessionProvider>
           <WalletProvider>
             {children}

@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, uuid, integer, decimal, boolean, jsonb, pgEnu
 import { relations } from "drizzle-orm"
 
 // Enum for user roles
-export const userRoleEnum = pgEnum("user_role", ["BUYER", "SELLER", "ADMIN"])
+export const userRoleEnum = pgEnum("user_role", ["BUYER", "SELLER", "BOTH", "ADMIN"])
 
 // Enum for KYC status
 export const kycStatusEnum = pgEnum("kyc_status", ["PENDING", "VERIFIED", "REJECTED"])

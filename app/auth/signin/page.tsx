@@ -1,81 +1,91 @@
 "use client"
 
+import { Lock } from "lucide-react"
+import { LoginForm } from "@/components/login-form"
+import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
-import { Separator } from "@/components/ui/separator"
-import { ConnectButton } from "@mysten/dapp-kit"
 
-export default function SignIn() {
+export default function SignInPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
+  const [toast, setToast] = useState<{ title: string, description: string } | null>(null)
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
     try {
-      const result = await signIn("google", {
-        redirect: false,
+      await signIn("google", {
         callbackUrl: "/onboarding/profile",
       })
-
-      if (result?.error) {
-        toast({
-          title: "Sign In Failed",
-          description: result.error,
-          variant: "destructive",
-        })
-      } else if (result?.ok) {
-        router.push("/onboarding/profile")
-      }
     } catch (error) {
-      toast({
+      console.error("Unexpected error:", error)
+      setToast({
         title: "Error",
         description: "An unexpected error occurred",
-        variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
-      <Card className="w-full max-w-md border-slate-700 bg-slate-900">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl">Sign In to CryptoVault</CardTitle>
-          <CardDescription>Connect with your wallet or use Google to get started</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full bg-white text-black hover:bg-slate-100"
-          >
-            {isLoading ? "Signing in..." : "Sign In with Google"}
-          </Button>
+    <div className="min-h-screen relative flex items-center justify-center p-4">
+      {/* Background Grid */}
+      <div className="absolute inset-0 -z-10">
+        <FlickeringGrid
+          className="z-0 absolute inset-0 size-full"
+          squareSize={4}
+          gridGap={6}
+          color="#FF3333"
+          maxOpacity={0.1}
+          flickerChance={0.1}
+        />
+      </div>
 
-          <Separator className="bg-slate-700" />
-
-          <div className="space-y-2">
-            <p className="text-sm text-slate-400">Or use your wallet</p>
-            <div className="flex justify-center">
-              <ConnectButton className="w-full !bg-transparent !border-slate-700 hover:!bg-slate-800 !text-white" />
+      <div className="w-full max-w-md">
+        {/* Logo/Branding */}
+        <div className="flex justify-center mb-8">
+          <a href="/" className="flex items-center gap-2">
+            <div className="bg-primary text-primary-foreground border-2 border-border flex size-10 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Lock className="size-5" />
             </div>
-          </div>
+            <span>Cypheron</span>
+          </a>
+        </div>
 
-          <p className="text-xs text-slate-500 text-center">
-            Don't have an account?{" "}
-            <a href="/auth/signup" className="text-blue-400 hover:underline">
-              Sign up
-            </a>
-          </p>
-        </CardContent>
-      </Card>
+        {/* Login Form Card */}
+        <div className="border-4 border-border bg-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8">
+          <LoginForm
+            onGoogleSignIn={handleGoogleSignIn}
+            WalletButton={
+              <div className="w-full">
+                {/* Replace with: <ConnectButton className="w-full" /> */}
+                <button className="w-full border-2 border-border bg-background hover:bg-muted px-4 py-2 transition-colors">
+                  Connect Wallet
+                </button>
+              </div>
+            }
+          />
+        </div>
+
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <a href="/" className="text-sm hover:underline underline-offset-4">
+            ← Back to Home
+          </a>
+        </div>
+      </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 border-4 border-border bg-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 max-w-sm">
+          <h3 className="mb-1">{toast.title}</h3>
+          <p className="text-sm text-muted-foreground">{toast.description}</p>
+          <button
+            onClick={() => setToast(null)}
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   )
 }

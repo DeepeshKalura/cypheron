@@ -8,6 +8,13 @@
       "when": 1763790253632,
       "tag": "0000_motionless_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763797497460,
+      "tag": "0001_chunky_clea",
+      "breakpoints": true
     }
   ]
 }

@@ -5,87 +5,55 @@ import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldGroup,
-  FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { signIn } from "next-auth/react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
-import { ConnectButton } from "@mysten/dapp-kit"
+
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  onGoogleSignIn?: () => Promise<void>;
+  WalletButton?: React.ReactNode;
+}
 
 export function LoginForm({
   className,
+  onGoogleSignIn,
+  WalletButton,
   ...props
-}: React.ComponentProps<"form">) {
-  const router = useRouter()
-  const { toast } = useToast()
+}: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGoogleSignIn = async () => {
-    console.log("Google Sign In clicked")
+    if (!onGoogleSignIn) {
+      console.log("Google Sign In not configured")
+      return
+    }
     setIsLoading(true)
     try {
-      const result = await signIn("google", {
-        redirect: false,
-        callbackUrl: "/onboarding/profile",
-      })
-
-      console.log("SignIn result:", result)
-
-      if (result?.error) {
-        console.error("SignIn error:", result.error)
-        toast({
-          title: "Sign In Failed",
-          description: result.error,
-          variant: "destructive",
-        })
-      } else if (result?.ok) {
-        console.log("SignIn successful, redirecting...")
-        router.push("/onboarding/profile")
-      }
-    } catch (error) {
-      console.error("Unexpected error during sign in:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      })
+      await onGoogleSignIn()
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Email/Password login attempted (not implemented yet)")
-    toast({
-      title: "Not Implemented",
-      description: "Please use Google or Wallet login for now.",
-    })
-  }
-
   return (
-    <form
+    <div
       className={cn("flex flex-col gap-6", className)}
-      onSubmit={handleSubmit}
       {...props}
     >
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Sign in to Cypheron</h1>
+          <h1>Sign in to Cypheron</h1>
           <p className="text-muted-foreground text-sm text-balance">
             Connect your wallet or use Google to get started
           </p>
         </div>
 
         {/* Wallet Connection */}
-        <Field>
-          <div className="flex justify-center w-full">
-            <ConnectButton className="w-full !bg-primary/10 !border-primary/20 hover:!bg-primary/20 !text-primary-foreground" />
-          </div>
-        </Field>
+        {WalletButton && (
+          <Field>
+            {WalletButton}
+          </Field>
+        )}
 
         <FieldSeparator>Or continue with</FieldSeparator>
 
@@ -95,7 +63,7 @@ export function LoginForm({
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full"
+            className="w-full border-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
               <path
@@ -107,35 +75,13 @@ export function LoginForm({
           </Button>
         </Field>
 
-        <FieldSeparator>Or with email</FieldSeparator>
-
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
-        </Field>
-        <Field>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
-          </div>
-          <Input id="password" type="password" required />
-        </Field>
-        <Field>
-          <Button type="submit" className="w-full">Login</Button>
-        </Field>
-
         <div className="text-center text-sm">
           Don&apos;t have an account?{" "}
-          <a href="#" className="underline underline-offset-4">
+          <a href="/auth/signup" className="underline underline-offset-4">
             Sign up
           </a>
         </div>
       </FieldGroup>
-    </form>
+    </div>
   )
 }

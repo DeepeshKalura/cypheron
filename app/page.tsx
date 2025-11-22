@@ -39,9 +39,9 @@ export default function HomePage() {
   ]
 
   const stats = [
-    { label: "Datasets", value: "2,847" },
-    { label: "Active Traders", value: "5,234" },
-    { label: "Volume (USD)", value: "$14.2M" },
+    { label: "Verified Datasets", value: "12,847" },
+    { label: "Total Volume", value: "$142.5M" },
+    { label: "ZK Proofs Generated", value: "850k+" },
   ]
 
   return (
@@ -54,12 +54,13 @@ export default function HomePage() {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <h1 className="text-4xl sm:text-5xl font-bold text-balance leading-tight">
-                    Trade Encrypted Data on the <span className="text-primary">Blockchain</span>
+                  <h1 className="text-4xl sm:text-6xl font-bold text-balance leading-tight">
+                    Monetize Your Data. <br />
+                    <span className="text-primary">Privately. Instantly.</span>
                   </h1>
                   <p className="text-lg text-foreground/70 text-balance leading-relaxed">
-                    CryptoVault is the world's first decentralized data marketplace with zero-knowledge verification.
-                    Sell your insights, verify authenticity, settle instantly.
+                    The world's first decentralized data marketplace powered by <strong>Zero-Knowledge Proofs</strong> on Sui.
+                    Verify authenticity without revealing secrets. Get paid in seconds.
                   </p>
                 </div>
 
@@ -109,7 +110,7 @@ export default function HomePage() {
         <section className="py-20 px-4 sm:px-6 lg:px-8 border-t border-border">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Why CryptoVault?</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Why Cypheron?</h2>
               <p className="text-foreground/70 text-lg max-w-2xl mx-auto">
                 Built with cutting-edge cryptography and blockchain technology for the modern data economy.
               </p>
@@ -164,7 +165,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto">
             <div className="grid md:grid-cols-4 gap-8 mb-8">
               <div>
-                <p className="font-bold text-primary mb-4">CryptoVault</p>
+                <p className="font-bold text-primary mb-4">Cypheron</p>
                 <p className="text-sm text-foreground/50">Decentralized data marketplace on Sui blockchain.</p>
               </div>
               <div>
@@ -229,7 +230,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="border-t border-border pt-8 flex justify-between items-center text-sm text-foreground/50">
-              <p>&copy; 2025 CryptoVault. All rights reserved.</p>
+              <p>&copy; 2025 Cypheron. All rights reserved.</p>
               <p>Built on Sui Blockchain</p>
             </div>
           </div>

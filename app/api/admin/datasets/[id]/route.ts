@@ -4,7 +4,11 @@ import { datasets, users, auditLogs } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user?.email) {
@@ -18,28 +22,25 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Admin access required" }, { status: 403 })
     }
 
-    // Get dataset info for audit log
-    const dataset = await db.select().from(datasets).where(eq(datasets.id, params.id)).limit(1)
+    // Delete dataset and return the deleted record
+    const deleted = await db.delete(datasets).where(eq(datasets.id, id)).returning()
 
-    if (!dataset.length) {
+    if (!deleted.length) {
       return NextResponse.json({ error: "Dataset not found" }, { status: 404 })
     }
-
-    // Delete dataset
-    await db.delete(datasets).where(eq(datasets.id, params.id))
 
     // Log audit action
     await db.insert(auditLogs).values({
       adminId: admin[0].id,
       action: "DELETE_DATASET",
       entityType: "DATASET",
-      entityId: params.id,
+      entityId: id,
       reason: "Admin deletion",
       changes: {
         deletedDataset: {
-          title: dataset[0].title,
-          sellerId: dataset[0].sellerId,
-          isFraudulent: dataset[0].isFraudulent,
+          title: deleted[0].title,
+          sellerId: deleted[0].sellerId,
+          isFraudulent: deleted[0].isFraudulent,
         },
       },
     })

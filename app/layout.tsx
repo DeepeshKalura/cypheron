@@ -11,7 +11,7 @@ const _spaceMono = V0_Font_Space_Mono({ subsets: ['latin'], weight: ["400", "700
 const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200", "300", "400", "500", "600", "700", "800", "900"], variable: '--font-source-serif-4' })
 
 export const metadata: Metadata = {
-  title: "CryptoVault - Decentralized Data Marketplace",
+  title: "Cypheron - Decentralized Data Marketplace",
   description: "Trade encrypted data on the blockchain with zero-knowledge proofs. Secure, trustless, and verifiable data marketplace powered by Sui.",
   generator: "v0.app",
   icons: {

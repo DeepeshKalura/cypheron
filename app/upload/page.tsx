@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Navigation } from "@/components/navigation"
 import { UploadSteps } from "@/components/upload-steps"
+import { ZKVisualizer } from "@/components/zk-visualizer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -59,20 +60,25 @@ export default function UploadPage() {
     }
   }
 
+  const [showZkVisualizer, setShowZkVisualizer] = useState(false)
+
   const handlePublish = async () => {
     if (!file || !currentAccount) return
+    setShowZkVisualizer(true)
+  }
 
+  const handleZkComplete = async () => {
+    setShowZkVisualizer(false)
     setIsUploading(true)
 
     try {
       // 1. Read File
       setUploadStatus("Reading file...")
-      const fileContent = await file.text()
+      const fileContent = await file!.text()
       setProgress(20)
 
-      // 2. Generate ZK Proof (Mock)
-      setUploadStatus("Generating Zero-Knowledge Proof...")
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate heavy computation
+      // 2. Generate ZK Proof (Mock - already visualized)
+      setUploadStatus("Verifying Zero-Knowledge Proof...")
       const zkProof = Array.from(new TextEncoder().encode("mock-zk-proof"))
       setProgress(50)
 
@@ -108,7 +114,7 @@ export default function UploadPage() {
       })
 
       await signAndExecuteTransaction({
-        transaction: tx,
+        transaction: tx as any,
       })
 
       setProgress(100)
@@ -382,50 +388,56 @@ export default function UploadPage() {
                   )}
 
                   {/* Navigation Buttons */}
-                  <div className="flex justify-between mt-8 pt-8 border-t border-border">
-                    <Button
-                      variant="outline"
-                      onClick={handlePrev}
-                      disabled={currentStep === 1}
-                      className="border-border disabled:opacity-50 bg-transparent"
-                    >
-                      Back
-                    </Button>
-
-                    {currentStep === 5 ? (
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        View Your Dataset
-                      </Button>
-                    ) : isUploading ? (
-                      <div className="flex-1 ml-4">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>{uploadStatus}</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-500 ease-out"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
+                  {showZkVisualizer ? (
+                    <div className="mt-8">
+                      <ZKVisualizer isGenerating={true} onComplete={handleZkComplete} />
+                    </div>
+                  ) : (
+                    <div className="flex justify-between mt-8 pt-8 border-t border-border">
                       <Button
-                        onClick={currentStep === 4 ? handlePublish : handleNext}
-                        disabled={isUploading}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        variant="outline"
+                        onClick={handlePrev}
+                        disabled={currentStep === 1}
+                        className="border-border disabled:opacity-50 bg-transparent"
                       >
-                        {currentStep === 4 ? (
-                          <>
-                            <Lock className="w-4 h-4 mr-2" />
-                            Encrypt & Publish
-                          </>
-                        ) : (
-                          "Next Step"
-                        )}
+                        Back
                       </Button>
-                    )}
-                  </div>
+
+                      {currentStep === 5 ? (
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                          View Your Dataset
+                        </Button>
+                      ) : isUploading ? (
+                        <div className="flex-1 ml-4">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>{uploadStatus}</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary transition-all duration-500 ease-out"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={currentStep === 4 ? handlePublish : handleNext}
+                          disabled={isUploading}
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        >
+                          {currentStep === 4 ? (
+                            <>
+                              <Lock className="w-4 h-4 mr-2" />
+                              Encrypt & Publish
+                            </>
+                          ) : (
+                            "Next Step"
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </Card>
               </div>
             </div>

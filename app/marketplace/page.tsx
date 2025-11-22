@@ -9,94 +9,83 @@ import { MarketplaceFilters } from "@/components/marketplace-filters"
 const mockDatasets = [
   {
     id: "1",
-    title: "Real-Time Stock Market Data",
-    description: "Live stock prices, volumes, and technical indicators for major exchanges.",
+    title: "BTC Whale Alert Feed (Real-time)",
+    description: "Live feed of Bitcoin transactions > 100 BTC. Includes wallet labeling (Exchange vs Cold Storage) and historical movement patterns. Essential for high-frequency trading algorithms.",
     category: "Financial",
-    price: 499,
-    volume: 2847,
-    rating: 4.8,
-    downloads: 1204,
+    price: 250,
+    volume: 12450,
+    rating: 4.9,
+    downloads: 842,
     verified: true,
+    seller: "0x71...9a2",
+    objectId: "0x1"
   },
   {
     id: "2",
-    title: "Social Media Sentiment Analysis",
-    description: "Daily sentiment scores from Twitter, Reddit, and Discord about cryptocurrencies.",
-    category: "Social Sentiment",
-    price: 299,
-    volume: 1523,
-    rating: 4.6,
-    downloads: 893,
+    title: "Global Cancer Research Dataset v2.1",
+    description: "Anonymized clinical trial data from 50+ research institutions. Includes genetic markers, treatment protocols, and 5-year survival rates. HIPAA compliant and ZK-verified for privacy.",
+    category: "Health",
+    price: 5000,
+    volume: 8500,
+    rating: 5.0,
+    downloads: 124,
     verified: true,
+    seller: "0x8a...b12",
+    objectId: "0x2"
   },
   {
     id: "3",
-    title: "Weather Forecast Accuracy Data",
-    description: "Historical weather data with prediction accuracy metrics and anomalies.",
-    category: "Weather",
-    price: 199,
-    volume: 1847,
-    rating: 4.5,
-    downloads: 656,
+    title: "SpaceX Starlink Latency Map (Global)",
+    description: "Comprehensive latency and throughput data for Starlink nodes worldwide. Scraped and verified from 10,000+ ground stations. Perfect for ISP competitive analysis.",
+    category: "Technology",
+    price: 150,
+    volume: 3200,
+    rating: 4.7,
+    downloads: 456,
     verified: true,
+    seller: "0x3c...d45",
+    objectId: "0x3"
   },
   {
     id: "4",
-    title: "Supply Chain Transparency Records",
-    description: "End-to-end supply chain tracking data with verified timestamps.",
-    category: "Supply Chain",
-    price: 349,
-    volume: 912,
-    rating: 4.7,
-    downloads: 421,
+    title: "Retail Foot Traffic: NYC & London",
+    description: "High-resolution foot traffic heatmaps for prime retail locations in New York and London. Updated weekly. Derived from aggregated mobile signal data.",
+    category: "Real Estate",
+    price: 899,
+    volume: 5600,
+    rating: 4.8,
+    downloads: 210,
     verified: true,
+    seller: "0x9e...f78",
+    objectId: "0x4"
   },
   {
     id: "5",
-    title: "Health & Wellness Metrics",
-    description: "Aggregated anonymized health data from wearable devices and apps.",
-    category: "Health",
-    price: 249,
-    volume: 1654,
-    rating: 4.4,
-    downloads: 734,
+    title: "DeFi Liquidity Sniper Alpha",
+    description: "Predictive model output for liquidity pool drains and rug pulls on Solana and Sui. 85% accuracy rate in backtesting. ZK-proof of model performance included.",
+    category: "Financial",
+    price: 1200,
+    volume: 15000,
+    rating: 4.6,
+    downloads: 89,
     verified: false,
+    seller: "0x2b...c34",
+    objectId: "0x5"
   },
   {
     id: "6",
-    title: "Real Estate Price Index",
-    description: "Comprehensive real estate pricing data with market trends and forecasts.",
-    category: "Real Estate",
-    price: 399,
-    volume: 2134,
-    rating: 4.9,
-    downloads: 1087,
-    verified: true,
-  },
-  {
-    id: "7",
-    title: "Crypto Market Intelligence",
-    description: "Institutional-grade cryptocurrency trading data and analysis.",
-    category: "Financial",
-    price: 599,
-    volume: 3421,
-    rating: 4.8,
-    downloads: 1523,
-    verified: true,
-  },
-  {
-    id: "8",
-    title: "IoT Sensor Network Data",
-    description: "Distributed sensor readings from urban IoT networks.",
+    title: "AgriTech: Soil Sensor Array (Midwest)",
+    description: "IoT sensor data from 500+ farms across the US Midwest. Moisture levels, nutrient content, and crop yield correlations over 3 seasons.",
     category: "Supply Chain",
-    price: 179,
-    volume: 987,
-    rating: 4.3,
-    downloads: 543,
-    verified: false,
-  },
+    price: 350,
+    volume: 2100,
+    rating: 4.5,
+    downloads: 167,
+    verified: true,
+    seller: "0x5d...e67",
+    objectId: "0x6"
+  }
 ]
-
 
 
 import { useSuiClient } from "@mysten/dapp-kit"
@@ -136,22 +125,8 @@ export default function MarketplacePage() {
         // const objects = await suiClient.getOwnedObjects({ owner: MARKETPLACE_ID })
 
         // Using mock data structure but preparing for real integration
-        setDatasets([
-          {
-            id: "1",
-            title: "Real-Time Stock Market Data",
-            description: "Live stock prices, volumes, and technical indicators for major exchanges.",
-            category: "Financial",
-            price: 499,
-            volume: 2847,
-            rating: 4.8,
-            downloads: 1204,
-            verified: true,
-            seller: "0x123...abc",
-            objectId: "0x1" // Mock object ID
-          },
-          // ... keep other mock data or fetch real ones
-        ])
+        // Using mock data structure but preparing for real integration
+        setDatasets(mockDatasets)
       } catch (error) {
         console.error("Failed to fetch datasets", error)
       } finally {
@@ -161,6 +136,10 @@ export default function MarketplacePage() {
 
     fetchDatasets()
   }, [suiClient])
+
+  const [purchasedDatasets, setPurchasedDatasets] = useState<string[]>([])
+
+  // ... (existing code)
 
   const handlePurchase = async (dataset: any) => {
     if (!currentAccount) {
@@ -194,12 +173,12 @@ export default function MarketplacePage() {
         transaction: tx as any,
       })
 
+      setPurchasedDatasets((prev) => [...prev, dataset.id])
+
       toast({
         title: "Purchase Successful!",
         description: "The dataset decryption key has been transferred to your wallet.",
       })
-
-      // In a real app, we would now trigger the decryption or download
 
     } catch (error) {
       console.error(error)
@@ -210,12 +189,6 @@ export default function MarketplacePage() {
       })
     }
   }
-
-  // Filter logic remains the same...
-  const filteredDatasets = datasets.filter((dataset) => {
-    // ... (existing filter logic)
-    return true // Placeholder for brevity in this replacement
-  })
 
   return (
     <>
@@ -248,18 +221,32 @@ export default function MarketplacePage() {
                   </div>
                 ) : (
                   <div className="grid gap-6">
-                    {/* We need to pass handlePurchase to DatasetCard or wrap it */}
                     {datasets.map((dataset) => (
                       <div key={dataset.id} className="relative">
                         <DatasetCard {...dataset} />
                         {/* Overlay Buy Button for Hackathon Demo */}
                         <div className="absolute bottom-4 right-4">
-                          <button
-                            onClick={() => handlePurchase(dataset)}
-                            className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-                          >
-                            Buy for {dataset.price} SUI
-                          </button>
+                          {purchasedDatasets.includes(dataset.id) ? (
+                            <button
+                              className="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2 shadow-lg shadow-green-500/20"
+                              onClick={() => {
+                                toast({
+                                  title: "Downloading...",
+                                  description: "Decrypted file is being downloaded to your device.",
+                                })
+                              }}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                              Download Decrypted
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handlePurchase(dataset)}
+                              className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors shadow-lg"
+                            >
+                              Buy for {dataset.price} SUI
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

@@ -4,7 +4,11 @@ import { datasets, users, auditLogs } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
   try {
     const session = await auth()
     if (!session?.user?.email) {
@@ -26,7 +30,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         fraudReason: reason,
         updatedAt: new Date(),
       })
-      .where(eq(datasets.id, params.id))
+      .where(eq(datasets.id, id))
       .returning()
 
     // Log audit action
@@ -34,7 +38,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       adminId: admin[0].id,
       action: "FLAG_FRAUDULENT",
       entityType: "DATASET",
-      entityId: params.id,
+      entityId: id,
       reason,
     })
 

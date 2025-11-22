@@ -1,25 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
 import { Spinner } from "@/components/ui/spinner"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { CheckCircle2, AlertCircle } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
 
 export default function ContractOnboarding() {
   const router = useRouter()
   const { data: session, status } = useSession()
-  const { toast } = useToast()
+  const [toast, setToast] = useState<{ title: string, description: string, variant?: string } | null>(null)
   const [isDeploying, setIsDeploying] = useState(false)
   const [deployStatus, setDeployStatus] = useState<"idle" | "deploying" | "success" | "error">("idle")
   const [contractAddress, setContractAddress] = useState("")
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin")
+    }
+  }, [status, router])
+
   if (status === "unauthenticated") {
-    router.push("/auth/signin")
     return null
   }
 
@@ -39,7 +43,7 @@ export default function ContractOnboarding() {
       setContractAddress(data.contractAddress)
       setDeployStatus("success")
 
-      toast({
+      setToast({
         title: "Smart contract deployed!",
         description: "Your marketplace contract is now ready to use.",
       })
@@ -49,7 +53,7 @@ export default function ContractOnboarding() {
       }, 2000)
     } catch (error) {
       setDeployStatus("error")
-      toast({
+      setToast({
         title: "Deployment failed",
         description: "Could not deploy smart contract. Please try again.",
         variant: "destructive",
@@ -59,68 +63,145 @@ export default function ContractOnboarding() {
     }
   }
 
+  const handleSkip = () => {
+    router.push("/dashboard")
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
-      <div className="max-w-md mx-auto mt-20">
-        <Card className="border-slate-700 bg-slate-900">
-          <CardHeader>
-            <CardTitle>Deploy Smart Contract</CardTitle>
-            <CardDescription>Create your marketplace contract on Sui testnet</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+    <div className="min-h-screen relative flex items-center justify-center p-4">
+      {/* Background Grid */}
+      <div className="absolute inset-0 -z-10">
+        <FlickeringGrid
+          className="z-0 absolute inset-0 size-full"
+          squareSize={4}
+          gridGap={6}
+          color="#FF3333"
+          maxOpacity={0.1}
+          flickerChance={0.1}
+        />
+      </div>
+
+      <div className="w-full max-w-md">
+        {/* Logo/Branding */}
+        <div className="flex justify-center mb-8">
+          <a href="/" className="flex items-center gap-2">
+            <div className="bg-primary text-primary-foreground border-2 border-border flex size-10 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Logo className="size-6" />
+            </div>
+            <span>Cypheron</span>
+          </a>
+        </div>
+
+        {/* Contract Card */}
+        <div className="border-4 border-border bg-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8">
+          <div className="mb-6">
+            <h1 className="mb-2">Deploy Smart Contract</h1>
+            <p className="text-muted-foreground text-sm">
+              Create your marketplace contract on Sui testnet
+            </p>
+          </div>
+
+          <div className="space-y-4">
             {deployStatus === "idle" && (
-              <Alert className="border-blue-700 bg-blue-900/20">
-                <AlertCircle className="h-4 w-4 text-blue-400" />
-                <AlertDescription className="text-blue-300">
-                  We'll deploy a smart contract to the Sui testnet under your account.
-                </AlertDescription>
-              </Alert>
+              <div className="border-2 border-accent bg-accent/10 p-4 flex gap-3">
+                <AlertCircle className="size-5 text-accent flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm">
+                    We'll deploy a smart contract to the Sui testnet under your account. This allows you to list and sell datasets securely.
+                  </p>
+                </div>
+              </div>
             )}
 
             {deployStatus === "deploying" && (
-              <div className="flex flex-col items-center justify-center space-y-2 py-4">
-                <Spinner />
-                <p className="text-sm text-slate-300">Deploying contract...</p>
+              <div className="flex flex-col items-center justify-center space-y-3 py-8">
+                <Spinner size="lg" />
+                <p className="text-sm text-muted-foreground">Deploying contract to Sui testnet...</p>
+                <p className="text-xs text-muted-foreground">This may take a few moments</p>
               </div>
             )}
 
             {deployStatus === "success" && (
-              <Alert className="border-green-700 bg-green-900/20">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
-                <AlertDescription className="text-green-300">Contract deployed successfully!</AlertDescription>
-              </Alert>
-            )}
-
-            {deployStatus === "error" && (
-              <Alert className="border-red-700 bg-red-900/20" variant="destructive">
-                <AlertCircle className="h-4 w-4 text-red-400" />
-                <AlertDescription className="text-red-300">
-                  Failed to deploy contract. Please try again.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {contractAddress && (
-              <div className="bg-slate-800 p-3 rounded text-xs break-all text-slate-300">
-                <p className="font-semibold mb-1">Contract Address:</p>
-                {contractAddress}
+              <div className="border-2 border-[#00cc00] bg-[#00cc00]/10 p-4 flex gap-3">
+                <CheckCircle2 className="size-5 text-[#00cc00] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm">
+                    Contract deployed successfully! Redirecting to dashboard...
+                  </p>
+                </div>
               </div>
             )}
 
-            <Button
-              onClick={handleDeployContract}
-              disabled={isDeploying || deployStatus === "success"}
-              className="w-full"
-            >
-              {deployStatus === "deploying"
-                ? "Deploying..."
-                : deployStatus === "success"
-                  ? "Deployed!"
-                  : "Deploy Contract"}
-            </Button>
-          </CardContent>
-        </Card>
+            {deployStatus === "error" && (
+              <div className="border-2 border-destructive bg-destructive/10 p-4 flex gap-3">
+                <AlertCircle className="size-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm">
+                    Failed to deploy contract. Please check your wallet connection and try again.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {contractAddress && (
+              <div className="border-2 border-border bg-muted p-4">
+                <p className="text-xs mb-2">Contract Address:</p>
+                <p className="text-xs break-all font-mono">{contractAddress}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              {deployStatus !== "success" && (
+                <Button
+                  variant="outline"
+                  onClick={handleSkip}
+                  disabled={isDeploying}
+                  className="flex-1 border-2"
+                >
+                  Skip for now
+                </Button>
+              )}
+              <Button
+                onClick={handleDeployContract}
+                disabled={isDeploying || deployStatus === "success"}
+                className={deployStatus !== "success" ? "flex-1" : "w-full"}
+              >
+                {deployStatus === "deploying" ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner size="sm" />
+                    Deploying...
+                  </span>
+                ) : deployStatus === "success" ? (
+                  "Deployed!"
+                ) : (
+                  "Deploy Contract"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Back Link */}
+        <div className="text-center mt-6">
+          <a href="/onboarding/profile" className="text-sm hover:underline underline-offset-4">
+            ← Back to Profile
+          </a>
+        </div>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div className={`fixed bottom-4 right-4 border-4 ${toast.variant === 'destructive' ? 'border-destructive' : 'border-border'} bg-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 max-w-sm`}>
+          <h3 className="mb-1">{toast.title}</h3>
+          <p className="text-sm text-muted-foreground">{toast.description}</p>
+          <button
+            onClick={() => setToast(null)}
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   )
 }

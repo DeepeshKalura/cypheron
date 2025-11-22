@@ -1,6 +1,6 @@
 "use client"
 
-import { Lock } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
 import { LoginForm } from "@/components/login-form"
 import { FlickeringGrid } from "@/components/ui/flickering-grid"
 import { signIn } from "next-auth/react"
@@ -44,7 +44,7 @@ export default function SignInPage() {
         <div className="flex justify-center mb-8">
           <a href="/" className="flex items-center gap-2">
             <div className="bg-primary text-primary-foreground border-2 border-border flex size-10 items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Lock className="size-5" />
+              <Logo className="size-6" />
             </div>
             <span>Cypheron</span>
           </a>

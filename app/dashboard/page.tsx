@@ -102,15 +102,8 @@ export default function DashboardPage() {
   const filteredDatasets = datasets.filter((dataset) => {
     if (filter === "all") return true
 
-    // Derive status from actual database fields
-    // "active" = not fraudulent and has been verified or has purchases
-    // "draft" = not fraudulent but no purchases yet
-    const isActive = !dataset.isFraudulent && (dataset.purchaseCount > 0 || dataset.verified)
-    const isDraft = !dataset.isFraudulent && dataset.purchaseCount === 0 && !dataset.verified
-
-    if (filter === "active") return isActive
-    if (filter === "draft") return isDraft
-    return true
+    const currentStatus = dataset.status || 'draft'
+    return currentStatus === filter
   })
 
   const totalEarnings = datasets.reduce((sum, d) => sum + (d.earnings || 0), 0)
@@ -217,12 +210,12 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-3 mb-2">
                               <h3 className="font-bold text-lg">{dataset.title}</h3>
                               <Badge
-                                className={`${!dataset.isFraudulent && (dataset.purchaseCount > 0 || dataset.verified)
+                                className={`${dataset.status === 'active'
                                   ? "bg-green-500/20 text-green-500 border-0"
                                   : "bg-yellow-500/20 text-yellow-500 border-0"
                                   }`}
                               >
-                                {!dataset.isFraudulent && (dataset.purchaseCount > 0 || dataset.verified) ? "active" : "draft"}
+                                {dataset.status || 'draft'}
                               </Badge>
                             </div>
                             <p className="text-sm text-foreground/50 mb-4">{dataset.category}</p>

@@ -12,6 +12,8 @@ import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { Transaction } from "@mysten/sui/transactions"
+import { useSignAndExecuteTransaction } from "@mysten/dapp-kit"
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -34,6 +36,8 @@ export default function UploadPage() {
   const currentAccount = useCurrentAccount()
   const { toast } = useToast()
   const router = useRouter()
+
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target

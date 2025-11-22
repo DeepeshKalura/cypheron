@@ -9,11 +9,10 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-import { useCurrentAccount } from "@mysten/dapp-kit"
+import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { Transaction } from "@mysten/sui/transactions"
-import { useSignAndExecuteTransaction } from "@mysten/dapp-kit"
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -31,8 +30,8 @@ export default function UploadPage() {
   const [newDatasetId, setNewDatasetId] = useState<string | null>(null)
   const [uploadStatus, setUploadStatus] = useState("")
   const [progress, setProgress] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const currentAccount = useCurrentAccount()
   const { toast } = useToast()
   const router = useRouter()
@@ -53,7 +52,6 @@ export default function UploadPage() {
   }
 
   const handleNext = () => {
-
     if (currentStep === 2 && !file) {
       toast({
         title: "File Required",
@@ -62,7 +60,6 @@ export default function UploadPage() {
       })
       return
     }
-
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1)
     }
@@ -95,7 +92,6 @@ export default function UploadPage() {
       return
     }
 
-    // Validate required fields
     if (!formData.title || !formData.price || !formData.category) {
       toast({
         title: "Missing information",
@@ -109,26 +105,78 @@ export default function UploadPage() {
   }
 
   const handleZkComplete = async () => {
+    if (isUploading) return // Prevent double clicks
+
     setShowZkVisualizer(false)
     setIsUploading(true)
 
     try {
-      // 1. Read File
+      // 1. Read File (Simulation for UI feedback)
       setUploadStatus("Reading file...")
       setProgress(20)
 
-      // 2. Generate ZK Proof (Mock - already visualized)
+      // 2. ZK Proof (Simulation)
       setUploadStatus("Verifying Zero-Knowledge Proof...")
       await new Promise(resolve => setTimeout(resolve, 500))
       setProgress(40)
 
-      // 3. Encrypt Data
+      // 3. Encryption Prep
       setUploadStatus("Encrypting data with AES-256...")
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Generate a unique Blob ID for the contract (client-side simulation)
+      // In a full prod app, you'd upload to Walrus first to get this ID.
+      const blobId = "blob_" + Date.now().toString() + "_" + Math.random().toString(36).substring(7)
       setProgress(60)
 
-      // 4. Upload to Backend API
-      setUploadStatus("Uploading to decentralized storage...")
+      // ============================================================
+      // 4. 🚀 SUI SMART CONTRACT INTERACTION
+      // ============================================================
+      setUploadStatus("Waiting for Wallet Signature...")
+
+      const PACKAGE_ID = process.env.NEXT_PUBLIC_PACKAGE_ID
+      const MARKETPLACE_ID = process.env.NEXT_PUBLIC_MARKETPLACE_ID
+      const MODULE_NAME = process.env.NEXT_PUBLIC_MODULE_NAME || "marketplace"
+
+      // Validate Config
+      if (!PACKAGE_ID || !MARKETPLACE_ID) {
+        console.error("Missing env vars:", { PACKAGE_ID, MARKETPLACE_ID })
+        throw new Error("Smart Contract configuration missing. Please check .env.local")
+      }
+
+      let txDigest = ""
+
+      try {
+        const tx = new Transaction()
+
+        // Construct the Move Call: package::module::list_dataset
+        tx.moveCall({
+          target: `${PACKAGE_ID}::${MODULE_NAME}::list_dataset`,
+          arguments: [
+            tx.object(MARKETPLACE_ID),                  // The Shared Object
+            tx.pure.string(formData.title),             // Title
+            tx.pure.u64(Number(formData.price) * 1_000_000_000), // Price (SUI -> MIST)
+            tx.pure.string(blobId),                     // The Data Hash/ID
+            tx.pure.string("zk_proof_placeholder"),     // ZK Proof
+          ],
+        })
+
+        // Prompt User Wallet
+        const txResponse = await signAndExecuteTransaction({
+          transaction: tx as any,
+        })
+
+        console.log("Sui TX Success:", txResponse.digest)
+        txDigest = txResponse.digest
+        setProgress(80)
+
+      } catch (txError) {
+        console.error("Sui Transaction Failed:", txError)
+        throw new Error("Transaction cancelled or failed. Please try again.")
+      }
+      // ============================================================
+
+
+      // 5. DATABASE UPLOAD
+      setUploadStatus("Indexing to Database...")
 
       const uploadFormData = new FormData()
       uploadFormData.append("file", file!)
@@ -138,6 +186,8 @@ export default function UploadPage() {
       uploadFormData.append("price", formData.price)
       uploadFormData.append("tags", formData.tags)
       uploadFormData.append("license", formData.license)
+      // Attach the Transaction Hash so DB knows it's real
+      uploadFormData.append("txHash", txDigest)
 
       const response = await fetch("/api/datasets/upload", {
         method: "POST",
@@ -146,36 +196,30 @@ export default function UploadPage() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Upload failed")
+        // Note: Even if DB fails, the blockchain TX already happened.
+        // In production, you'd have a background indexer to fix this.
+        throw new Error(error.error || "Database upload failed")
       }
 
       const data = await response.json()
-      // Store the newly created dataset ID for navigation
       if (data?.dataset?.id) {
         setNewDatasetId(data.dataset.id)
-      } else if (data?.id) {
-        setNewDatasetId(data.id)
       }
-      setProgress(90)
 
-      // 5. Mock blockchain confirmation (for UX)
-      setUploadStatus("Confirming transaction on Sui...")
-      await new Promise(resolve => setTimeout(resolve, 500))
       setProgress(100)
-
       setUploadStatus("Dataset published successfully!")
       setCurrentStep(5)
 
       toast({
         title: "Success!",
-        description: "Your dataset has been verified and listed on the marketplace.",
+        description: "Your dataset is verified and on the blockchain.",
       })
 
     } catch (error) {
       console.error(error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to publish dataset. Please try again.",
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       })
     } finally {

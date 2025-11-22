@@ -1,4 +1,4 @@
-import { NextAuth } from "next-auth"
+import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { neon } from "@neondatabase/serverless"
 import { drizzle } from "drizzle-orm/neon-http"

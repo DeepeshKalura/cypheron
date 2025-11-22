@@ -1,4 +1,4 @@
-import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client"
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client"
 
 const network = (process.env.NEXT_PUBLIC_SUI_NETWORK || "testnet") as "testnet" | "mainnet" | "devnet"
 const rpcUrl = process.env.NEXT_PUBLIC_SUI_RPC_URL || getFullnodeUrl(network)

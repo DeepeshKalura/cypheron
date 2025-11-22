@@ -1,32 +1,31 @@
 "use client"
 
-import { useWallet } from "@mysten/wallet-kit"
+import { ConnectButton, useCurrentAccount, useDisconnectWallet, useSignPersonalMessage } from "@mysten/dapp-kit"
 import { Button } from "@/components/ui/button"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { Wallet } from "lucide-react"
-import { useState } from "react"
+import { useEffect } from "react"
 
 export function WalletConnectButton() {
-  const { currentAccount, connect, disconnect } = useWallet()
+  const currentAccount = useCurrentAccount()
+  const { mutate: disconnect } = useDisconnectWallet()
   const { data: session } = useSession()
-  const router = useRouter()
   const { toast } = useToast()
-  const [isConnecting, setIsConnecting] = useState(false)
+  const { mutateAsync: signPersonalMessage } = useSignPersonalMessage()
 
-  const handleConnect = async () => {
-    setIsConnecting(true)
-    try {
-      await connect()
-
-      // Link wallet to user account if authenticated
+  useEffect(() => {
+    const linkWallet = async () => {
       if (session?.user?.email && currentAccount?.address) {
+        // Optional: You might want to sign a message to prove ownership before linking
+        // const message = new TextEncoder().encode(`Link wallet ${currentAccount.address} to ${session.user.email}`)
+        // const signature = await signPersonalMessage({ message })
+
         const response = await fetch("/api/wallet/link", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             walletAddress: currentAccount.address,
+            // signature: signature.signature,
           }),
         })
 
@@ -37,42 +36,16 @@ export function WalletConnectButton() {
           })
         }
       }
-    } catch (error) {
-      toast({
-        title: "Connection failed",
-        description: "Failed to connect wallet",
-        variant: "destructive",
-      })
-    } finally {
-      setIsConnecting(false)
     }
-  }
 
-  const handleDisconnect = () => {
-    disconnect()
-    toast({
-      title: "Wallet disconnected",
-      description: "Your wallet has been disconnected",
-    })
-  }
+    linkWallet()
+  }, [currentAccount, session, toast])
 
-  if (currentAccount) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-foreground/70">
-          {currentAccount.address.slice(0, 6)}...{currentAccount.address.slice(-4)}
-        </span>
-        <Button onClick={handleDisconnect} variant="outline" size="sm" className="border-border bg-transparent">
-          Disconnect
-        </Button>
-      </div>
-    )
-  }
-
+  // Using the default ConnectButton from dapp-kit for simplicity and better UX
+  // It handles the modal, connection state, etc.
   return (
-    <Button onClick={handleConnect} disabled={isConnecting} variant="outline" className="border-border bg-transparent">
-      <Wallet className="h-4 w-4 mr-2" />
-      {isConnecting ? "Connecting..." : "Connect Wallet"}
-    </Button>
+    <ConnectButton
+      className="!bg-transparent !text-foreground !border !border-border !h-9 !px-4 !py-2 !text-sm !font-medium hover:!bg-accent hover:!text-accent-foreground"
+    />
   )
 }

@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react"
 import { WalletProvider } from "@/lib/wallet-provider"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
+import { Toaster } from "@/components/ui/toaster"
 
 import { DM_Sans as V0_Font_DM_Sans, Space_Mono as V0_Font_Space_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           <WalletProvider>
             {children}
             <Analytics />
+            <Toaster />
           </WalletProvider>
         </SessionProvider>
       </body>

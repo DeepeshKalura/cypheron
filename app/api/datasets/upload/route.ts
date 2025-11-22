@@ -28,6 +28,7 @@ export async function POST(request: Request) {
     const category = formData.get("category") as string
     const price = formData.get("price") as string
     const file = formData.get("file") as File
+    const suiObjectId = formData.get("suiObjectId") as string
 
     console.log("[Upload Debug] Form Data:", { title, category, price, fileSize: file?.size })
 
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         category,
         tags: [],
         isFraudulent: false,
+        suiObjectId: suiObjectId,
         status: "active",
       })
       .returning()

@@ -1,0 +1,1 @@
+ALTER TABLE "datasets" ADD COLUMN "sui_object_id" text;

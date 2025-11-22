@@ -43,3 +43,6 @@ contracts/build
 
 data.csv
 *.enc
+
+# my custom tool
+.sca

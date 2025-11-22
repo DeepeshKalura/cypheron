@@ -9,10 +9,11 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit"
+import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { Transaction } from "@mysten/sui/transactions"
+
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -37,6 +38,7 @@ export default function UploadPage() {
   const router = useRouter()
 
   const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const suiClient = useSuiClient()
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target
@@ -143,6 +145,7 @@ export default function UploadPage() {
       }
 
       let txDigest = ""
+      let objectId = ""
 
       try {
         const tx = new Transaction()
@@ -165,6 +168,23 @@ export default function UploadPage() {
         })
 
         console.log("Sui TX Success:", txResponse.digest)
+
+        // 🔍 NEW: FETCH TRANSACTION EFFECTS TO GET OBJECT ID
+        setUploadStatus("Verifying on-chain creation...")
+        const txBlock = await suiClient.waitForTransaction({
+          digest: txResponse.digest,
+          options: { showEffects: true },
+        })
+
+        // Find the object that was created
+        const createdObject = txBlock.effects?.created?.[0]
+        const objectId = createdObject?.reference?.objectId
+
+        if (!objectId) {
+          throw new Error("Failed to retrieve Dataset Object ID from chain")
+        }
+        console.log("Created Object ID:", objectId)
+
         txDigest = txResponse.digest
         setProgress(80)
 
@@ -188,6 +208,7 @@ export default function UploadPage() {
       uploadFormData.append("license", formData.license)
       // Attach the Transaction Hash so DB knows it's real
       uploadFormData.append("txHash", txDigest)
+      uploadFormData.append("suiObjectId", objectId)
 
       const response = await fetch("/api/datasets/upload", {
         method: "POST",

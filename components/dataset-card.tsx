@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, Download, TrendingUp } from "lucide-react"
+import Link from "next/link"
 
 interface DatasetCardProps {
   id: string
@@ -63,10 +64,12 @@ export function DatasetCard({
             <p className="text-xs text-foreground/50">Price</p>
             <p className="text-xl font-bold text-primary">${price}</p>
           </div>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Eye className="w-4 h-4 mr-2" />
-            View
-          </Button>
+          +         <Link href={`/datasets/${id}`}>
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Eye className="w-4 h-4 mr-2" />
+              View
+            </Button>
+            +         </Link>
         </div>
       </div>
     </Card>

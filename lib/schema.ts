@@ -77,6 +77,7 @@ export const datasets = pgTable("datasets", {
   fraudReason: text("fraud_reason"),
   viewCount: integer("view_count").default(0),
   purchaseCount: integer("purchase_count").default(0),
+  suiObjectId: text("sui_object_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (t) => [

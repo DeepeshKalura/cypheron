@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: "/icon.png",
   },
 }
 
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light">
       <body className={`font-sans antialiased bg-background text-foreground ${_dmSans.variable} ${_spaceMono.variable} ${_sourceSerif_4.variable}`}>
         <Providers>
           {children}

@@ -71,6 +71,8 @@ export const datasets = pgTable("datasets", {
   zkProofHash: text("zk_proof_hash"),
   category: text("category"),
   tags: text("tags").array(),
+  status: text("status").default("active"), // "active" or "draft"
+  verified: boolean("verified").default(false),
   isFraudulent: boolean("is_fraudulent").default(false),
   fraudReason: text("fraud_reason"),
   viewCount: integer("view_count").default(0),

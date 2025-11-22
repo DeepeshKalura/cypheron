@@ -29,7 +29,22 @@ export default function DashboardPage() {
 
   const loadDatasets = async () => {
     try {
-      const response = await fetch("/api/datasets")
+      // Get current user ID from session email
+      if (!session?.user?.email) {
+        setIsLoading(false)
+        return
+      }
+
+      // First, get the user's database ID
+      const userResponse = await fetch(`/api/users/me`)
+      if (!userResponse.ok) {
+        setIsLoading(false)
+        return
+      }
+      const userData = await userResponse.json()
+
+      // Then fetch datasets filtered by this user's ID
+      const response = await fetch(`/api/datasets?sellerId=${userData.user.id}`)
       if (response.ok) {
         const data = await response.json()
         setDatasets(data.datasets || [])
@@ -38,6 +53,37 @@ export default function DashboardPage() {
       console.error("Failed to load datasets:", error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleView = (datasetId: string) => {
+    router.push(`/datasets/${datasetId}`)
+  }
+
+  const handleEdit = (datasetId: string) => {
+    router.push(`/datasets/${datasetId}/edit`)
+  }
+
+  const handleDelete = async (datasetId: string) => {
+    if (!confirm("Are you sure you want to delete this dataset? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/datasets/${datasetId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        // Remove from local state
+        setDatasets(datasets.filter(d => d.id !== datasetId))
+        // Show success message (you could add a toast here)
+      } else {
+        alert("Failed to delete dataset")
+      }
+    } catch (error) {
+      console.error("Delete error:", error)
+      alert("Failed to delete dataset")
     }
   }
 
@@ -172,8 +218,8 @@ export default function DashboardPage() {
                               <h3 className="font-bold text-lg">{dataset.title}</h3>
                               <Badge
                                 className={`${!dataset.isFraudulent && (dataset.purchaseCount > 0 || dataset.verified)
-                                    ? "bg-green-500/20 text-green-500 border-0"
-                                    : "bg-yellow-500/20 text-yellow-500 border-0"
+                                  ? "bg-green-500/20 text-green-500 border-0"
+                                  : "bg-yellow-500/20 text-yellow-500 border-0"
                                   }`}
                               >
                                 {!dataset.isFraudulent && (dataset.purchaseCount > 0 || dataset.verified) ? "active" : "draft"}
@@ -204,13 +250,28 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="flex gap-2 ml-4">
-                            <Button size="sm" variant="outline" className="border-border bg-transparent">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-border bg-transparent"
+                              onClick={() => handleView(dataset.id)}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="outline" className="border-border bg-transparent">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-border bg-transparent"
+                              onClick={() => handleEdit(dataset.id)}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="outline" className="border-border bg-transparent">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-border bg-transparent"
+                              onClick={() => handleDelete(dataset.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>

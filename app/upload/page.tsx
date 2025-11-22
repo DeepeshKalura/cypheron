@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -25,12 +26,14 @@ export default function UploadPage() {
   })
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [newDatasetId, setNewDatasetId] = useState<string | null>(null)
   const [uploadStatus, setUploadStatus] = useState("")
   const [progress, setProgress] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const currentAccount = useCurrentAccount()
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target
@@ -143,6 +146,12 @@ export default function UploadPage() {
       }
 
       const data = await response.json()
+      // Store the newly created dataset ID for navigation
+      if (data?.dataset?.id) {
+        setNewDatasetId(data.dataset.id)
+      } else if (data?.id) {
+        setNewDatasetId(data.id)
+      }
       setProgress(90)
 
       // 5. Mock blockchain confirmation (for UX)
@@ -439,7 +448,14 @@ export default function UploadPage() {
                       </Button>
 
                       {currentStep === 5 ? (
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                          onClick={() => {
+                            if (newDatasetId) {
+                              router.push(`/datasets/${newDatasetId}`)
+                            }
+                          }}
+                        >
                           View Your Dataset
                         </Button>
                       ) : isUploading ? (

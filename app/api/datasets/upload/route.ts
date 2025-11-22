@@ -4,6 +4,7 @@ import { datasets, users } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import CryptoJS from "crypto-js"
+import { uploadToStorage } from "@/lib/storage"
 
 export async function POST(request: Request) {
   try {
@@ -41,6 +42,11 @@ export async function POST(request: Request) {
     const fileHash = CryptoJS.SHA256(buffer.toString()).toString()
     console.log("[Upload Debug] File hashed:", fileHash)
 
+    console.log("[Upload Debug] Uploading to Storage Layer...")
+    // We use the hash as the filename to ensure uniqueness (Content Addressing)
+    const blobId = await uploadToStorage(file, `${fileHash}.enc`)
+    console.log("[Upload Debug] Storage successful. Blob ID:", blobId)
+
     // Mock ZK proof
     const zkProofHash = CryptoJS.SHA256(fileHash + Date.now()).toString()
     console.log("[Upload Debug] Attempting DB Insert...")
@@ -52,13 +58,14 @@ export async function POST(request: Request) {
         sellerId: user[0].id,
         title,
         description,
-        fileHash,
+        fileHash: blobId,
         fileSize: file.size,
         price,
         zkProofHash,
         category,
         tags: [],
         isFraudulent: false,
+        status: "active",
       })
       .returning()
 

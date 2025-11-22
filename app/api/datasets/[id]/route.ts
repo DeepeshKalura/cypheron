@@ -53,9 +53,41 @@ export async function DELETE(
   try {
     const { id } = await params
 
-    // Mock delete dataset
+    // Get session to verify ownership
+    const { auth } = await import("@/auth")
+    const session = await auth()
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Get user
+    const { db } = await import("@/lib/db")
+    const { datasets, users } = await import("@/lib/schema")
+    const { eq, and } = await import("drizzle-orm")
+
+    const user = await db.select().from(users).where(eq(users.email, session.user.email)).limit(1)
+
+    if (!user.length) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Delete dataset (only if user owns it)
+    const result = await db
+      .delete(datasets)
+      .where(and(
+        eq(datasets.id, id),
+        eq(datasets.sellerId, user[0].id)
+      ))
+      .returning()
+
+    if (!result.length) {
+      return NextResponse.json({ error: "Dataset not found or you don't have permission" }, { status: 404 })
+    }
+
     return NextResponse.json({ message: "Dataset deleted successfully" })
   } catch (error) {
+    console.error("Delete error:", error)
     return NextResponse.json({ error: "Failed to delete dataset" }, { status: 500 })
   }
 }

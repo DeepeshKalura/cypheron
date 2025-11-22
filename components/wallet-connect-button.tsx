@@ -45,7 +45,7 @@ export function WalletConnectButton() {
   // It handles the modal, connection state, etc.
   return (
     <ConnectButton
-      className="!bg-transparent !text-foreground !border !border-border !h-9 !px-4 !py-2 !text-sm !font-medium hover:!bg-accent hover:!text-accent-foreground"
+      className="!bg-black dark:!bg-white !text-white dark:!text-black !border-2 !border-black dark:!border-white !h-9 !px-4 !py-2 !text-sm !font-medium hover:!opacity-80 !transition-opacity"
     />
   )
 }

@@ -5,6 +5,7 @@ import {
   NavbarLogo,
   NavbarButton,
 } from "@/components/ui/resizable-navbar";
+import { WalletConnectButton } from "@/components/wallet-connect-button";
 
 export function Navigation() {
   return (
@@ -22,9 +23,7 @@ export function Navigation() {
             <NavbarButton href="/dashboard" variant="secondary" className="hidden sm:block">
               Dashboard
             </NavbarButton>
-            <NavbarButton className="bg-black dark:bg-white text-white dark:text-black">
-              Connect Wallet
-            </NavbarButton>
+            <WalletConnectButton />
           </div>
         </div>
       </NavBody>

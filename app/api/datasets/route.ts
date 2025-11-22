@@ -1,19 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import { datasets } from "@/lib/schema"
+import { desc, eq, gte, lte, and } from "drizzle-orm"
 
-// Mock database of datasets
-const datasets = [
-  {
-    id: "1",
-    title: "Real-Time Stock Market Data",
-    description: "Live stock prices, volumes, and technical indicators",
-    category: "Financial",
-    price: 499,
-    seller: "0xabc123...",
-    verified: true,
-    encrypted: true,
-    zkProofStatus: "verified",
-  },
-]
+
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,23 +12,36 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category")
     const minPrice = searchParams.get("minPrice")
     const maxPrice = searchParams.get("maxPrice")
+    const sellerId = searchParams.get("sellerId")
 
-    let filtered = [...datasets]
+    const conditions = []
 
     if (category && category !== "All") {
-      filtered = filtered.filter((d) => d.category === category)
+      conditions.push(eq(datasets.category, category))
     }
 
+
     if (minPrice) {
-      filtered = filtered.filter((d) => d.price >= Number.parseInt(minPrice))
+      conditions.push(gte(datasets.price, minPrice))
     }
 
     if (maxPrice) {
-      filtered = filtered.filter((d) => d.price <= Number.parseInt(maxPrice))
+      conditions.push(lte(datasets.price, maxPrice))
+    }
+    if (sellerId) {
+      conditions.push(eq(datasets.sellerId, sellerId))
     }
 
-    return NextResponse.json({ data: filtered, count: filtered.length })
+    const results = await db
+      .select()
+      .from(datasets)
+      .where(and(...conditions))
+      .orderBy(desc(datasets.createdAt))
+
+
+    return NextResponse.json({ datasets: results, count: results.length })
   } catch (error) {
+    console.error("Fetch datasets error:", error)
     return NextResponse.json({ error: "Failed to fetch datasets" }, { status: 500 })
   }
 }

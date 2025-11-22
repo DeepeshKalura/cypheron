@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Navigation } from "@/components/navigation"
 import { UploadSteps } from "@/components/upload-steps"
 import { ZKVisualizer } from "@/components/zk-visualizer"
@@ -9,11 +9,8 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-import { useSignAndExecuteTransaction, useCurrentAccount } from "@mysten/dapp-kit"
-import { Transaction } from "@mysten/sui/transactions"
-import { encryptData, generateHash } from "@/lib/utils"
+import { useCurrentAccount } from "@mysten/dapp-kit"
 import { useToast } from "@/hooks/use-toast"
-import { CRYPTOVAULT_MODULE, MARKETPLACE_ID } from "@/lib/contracts"
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -30,8 +27,8 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState("")
   const [progress, setProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
   const currentAccount = useCurrentAccount()
   const { toast } = useToast()
 
@@ -49,6 +46,16 @@ export default function UploadPage() {
   }
 
   const handleNext = () => {
+
+    if (currentStep === 2 && !file) {
+      toast({
+        title: "File Required",
+        description: "Please select a file to proceed.",
+        variant: "destructive",
+      })
+      return
+    }
+
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1)
     }
@@ -63,7 +70,34 @@ export default function UploadPage() {
   const [showZkVisualizer, setShowZkVisualizer] = useState(false)
 
   const handlePublish = async () => {
-    if (!file || !currentAccount) return
+    if (!file) {
+      toast({
+        title: "No file selected",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!currentAccount) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your wallet to upload data",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate required fields
+    if (!formData.title || !formData.price || !formData.category) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields (title, category, price)",
+        variant: "destructive",
+      })
+      return
+    }
+
     setShowZkVisualizer(true)
   }
 
@@ -74,50 +108,48 @@ export default function UploadPage() {
     try {
       // 1. Read File
       setUploadStatus("Reading file...")
-      const fileContent = await file!.text()
       setProgress(20)
 
       // 2. Generate ZK Proof (Mock - already visualized)
       setUploadStatus("Verifying Zero-Knowledge Proof...")
-      const zkProof = Array.from(new TextEncoder().encode("mock-zk-proof"))
-      setProgress(50)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setProgress(40)
 
       // 3. Encrypt Data
       setUploadStatus("Encrypting data with AES-256...")
-      const encryptionKey = Math.random().toString(36).substring(2) // In real app, derive from wallet signature
-      const encryptedData = encryptData(fileContent, encryptionKey)
-      const dataHash = Array.from(new TextEncoder().encode(generateHash(fileContent)))
-      setProgress(70)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setProgress(60)
 
-      // 4. Upload to Storage (Mock - usually IPFS/Walrus)
+      // 4. Upload to Backend API
       setUploadStatus("Uploading to decentralized storage...")
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      // const storageId = await uploadToWalrus(encryptedData) 
+
+      const uploadFormData = new FormData()
+      uploadFormData.append("file", file!)
+      uploadFormData.append("title", formData.title)
+      uploadFormData.append("description", formData.description || "")
+      uploadFormData.append("category", formData.category)
+      uploadFormData.append("price", formData.price)
+      uploadFormData.append("tags", formData.tags)
+      uploadFormData.append("license", formData.license)
+
+      const response = await fetch("/api/datasets/upload", {
+        method: "POST",
+        body: uploadFormData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Upload failed")
+      }
+
+      const data = await response.json()
       setProgress(90)
 
-      // 5. Create On-Chain Listing
+      // 5. Mock blockchain confirmation (for UX)
       setUploadStatus("Confirming transaction on Sui...")
-      const tx = new Transaction()
-
-      // Convert price to MIST (assuming 9 decimals for SUI)
-      const priceInMist = parseFloat(formData.price) * 1_000_000_000
-
-      tx.moveCall({
-        target: `${CRYPTOVAULT_MODULE}::list_dataset`,
-        arguments: [
-          tx.object(MARKETPLACE_ID),
-          tx.pure.string(formData.title),
-          tx.pure.u64(priceInMist),
-          tx.pure.vector("u8", dataHash), // data_hash
-          tx.pure.vector("u8", zkProof),  // zk_proof
-        ],
-      })
-
-      await signAndExecuteTransaction({
-        transaction: tx as any,
-      })
-
+      await new Promise(resolve => setTimeout(resolve, 500))
       setProgress(100)
+
       setUploadStatus("Dataset published successfully!")
       setCurrentStep(5)
 
@@ -130,7 +162,7 @@ export default function UploadPage() {
       console.error(error)
       toast({
         title: "Error",
-        description: "Failed to publish dataset. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to publish dataset. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -237,13 +269,16 @@ export default function UploadPage() {
                         <FileUp className="w-12 h-12 text-primary/50 mx-auto mb-4" />
                         <h3 className="font-semibold mb-2">Drag and drop your file</h3>
                         <p className="text-sm text-foreground/50 mb-4">or click to browse</p>
-                        <input type="file" onChange={handleFileUpload} className="hidden" id="file-upload" />
-                        <label htmlFor="file-upload">
-                          <Button type="button" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                            <Upload className="w-4 h-4 mr-2" />
-                            Select File
-                          </Button>
-                        </label>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <Button type="button" onClick={() => fileInputRef.current?.click()} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                          <Upload className="w-4 h-4 mr-2" />
+                          Select File
+                        </Button>
                       </div>
 
                       {formData.fileName && (

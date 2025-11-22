@@ -1,10 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { SessionProvider } from "next-auth/react"
-import { WalletProvider } from "@/lib/wallet-provider"
+import { Providers } from "@/components/providers"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
 
 import { DM_Sans as V0_Font_DM_Sans, Space_Mono as V0_Font_Space_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 
@@ -43,13 +41,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans antialiased bg-background text-foreground ${_dmSans.variable} ${_spaceMono.variable} ${_sourceSerif_4.variable}`}>
-        <SessionProvider>
-          <WalletProvider>
-            {children}
-            <Analytics />
-            <Toaster />
-          </WalletProvider>
-        </SessionProvider>
+        <Providers>
+          {children}
+          <Analytics />
+        </Providers>
       </body>
     </html>
   )

@@ -51,8 +51,8 @@
     "cmdk": "^1.0.4",
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
-    "drizzle-orm": "^0.44.7",
     "drizzle-kit": "^0.31.7",
+    "drizzle-orm": "^0.44.7",
     "embla-carousel-react": "^8.5.1",
     "input-otp": "^1.4.1",
     "lucide-react": "^0.554.0",
@@ -75,6 +75,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",

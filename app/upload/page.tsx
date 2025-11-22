@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, FileUp, Lock, CheckCircle2, AlertCircle } from "lucide-react"
+import { Upload, FileUp, Lock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
+import { useSignAndExecuteTransaction, useCurrentAccount } from "@mysten/dapp-kit"
+import { Transaction } from "@mysten/sui/transactions"
+import { encryptData, generateHash } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
+import { CRYPTOVAULT_MODULE, MARKETPLACE_ID } from "@/lib/contracts"
 
 export default function UploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -20,7 +25,14 @@ export default function UploadPage() {
     license: "single-use",
     fileName: "",
   })
+  const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState("")
+  const [progress, setProgress] = useState(0)
+
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const currentAccount = useCurrentAccount()
+  const { toast } = useToast()
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target
@@ -28,9 +40,10 @@ export default function UploadPage() {
   }
 
   const handleFileUpload = (e: any) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFormData((prev) => ({ ...prev, fileName: file.name }))
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      setFile(selectedFile)
+      setFormData((prev) => ({ ...prev, fileName: selectedFile.name }))
     }
   }
 
@@ -47,11 +60,76 @@ export default function UploadPage() {
   }
 
   const handlePublish = async () => {
+    if (!file || !currentAccount) return
+
     setIsUploading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsUploading(false)
-    setCurrentStep(5)
+
+    try {
+      // 1. Read File
+      setUploadStatus("Reading file...")
+      const fileContent = await file.text()
+      setProgress(20)
+
+      // 2. Generate ZK Proof (Mock)
+      setUploadStatus("Generating Zero-Knowledge Proof...")
+      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulate heavy computation
+      const zkProof = Array.from(new TextEncoder().encode("mock-zk-proof"))
+      setProgress(50)
+
+      // 3. Encrypt Data
+      setUploadStatus("Encrypting data with AES-256...")
+      const encryptionKey = Math.random().toString(36).substring(2) // In real app, derive from wallet signature
+      const encryptedData = encryptData(fileContent, encryptionKey)
+      const dataHash = Array.from(new TextEncoder().encode(generateHash(fileContent)))
+      setProgress(70)
+
+      // 4. Upload to Storage (Mock - usually IPFS/Walrus)
+      setUploadStatus("Uploading to decentralized storage...")
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      // const storageId = await uploadToWalrus(encryptedData) 
+      setProgress(90)
+
+      // 5. Create On-Chain Listing
+      setUploadStatus("Confirming transaction on Sui...")
+      const tx = new Transaction()
+
+      // Convert price to MIST (assuming 9 decimals for SUI)
+      const priceInMist = parseFloat(formData.price) * 1_000_000_000
+
+      tx.moveCall({
+        target: `${CRYPTOVAULT_MODULE}::list_dataset`,
+        arguments: [
+          tx.object(MARKETPLACE_ID),
+          tx.pure.string(formData.title),
+          tx.pure.u64(priceInMist),
+          tx.pure.vector("u8", dataHash), // data_hash
+          tx.pure.vector("u8", zkProof),  // zk_proof
+        ],
+      })
+
+      await signAndExecuteTransaction({
+        transaction: tx,
+      })
+
+      setProgress(100)
+      setUploadStatus("Dataset published successfully!")
+      setCurrentStep(5)
+
+      toast({
+        title: "Success!",
+        description: "Your dataset has been verified and listed on the marketplace.",
+      })
+
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: "Failed to publish dataset. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -318,13 +396,33 @@ export default function UploadPage() {
                       <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         View Your Dataset
                       </Button>
+                    ) : isUploading ? (
+                      <div className="flex-1 ml-4">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>{uploadStatus}</span>
+                          <span>{progress}%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-500 ease-out"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <Button
                         onClick={currentStep === 4 ? handlePublish : handleNext}
                         disabled={isUploading}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground"
                       >
-                        {isUploading ? "Publishing..." : currentStep === 4 ? "Publish Dataset" : "Next Step"}
+                        {currentStep === 4 ? (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Encrypt & Publish
+                          </>
+                        ) : (
+                          "Next Step"
+                        )}
                       </Button>
                     )}
                   </div>

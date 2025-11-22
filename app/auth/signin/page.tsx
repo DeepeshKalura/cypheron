@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
+import { ConnectButton } from "@mysten/dapp-kit"
 
 export default function SignIn() {
   const router = useRouter()
@@ -62,13 +63,9 @@ export default function SignIn() {
 
           <div className="space-y-2">
             <p className="text-sm text-slate-400">Or use your wallet</p>
-            <Button
-              variant="outline"
-              disabled={isLoading}
-              className="w-full border-slate-700 hover:bg-slate-800 bg-transparent"
-            >
-              Connect Sui Wallet
-            </Button>
+            <div className="flex justify-center">
+              <ConnectButton className="w-full !bg-transparent !border-slate-700 hover:!bg-slate-800 !text-white" />
+            </div>
           </div>
 
           <p className="text-xs text-slate-500 text-center">

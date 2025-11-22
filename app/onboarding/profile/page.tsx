@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,12 @@ export default function ProfileOnboarding() {
     role: "BUYER",
   })
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin")
+    }
+  }, [status, router])
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -34,7 +40,6 @@ export default function ProfileOnboarding() {
   }
 
   if (status === "unauthenticated") {
-    router.push("/auth/signin")
     return null
   }
 

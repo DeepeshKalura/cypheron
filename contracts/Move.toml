@@ -1,9 +1,10 @@
 [package]
-name = "CryptoVault"
-version = "0.1.0"
+name = "cypheron"
+version = "0.1.1"
+edition = "2024.beta"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
 
 [addresses]
-cryptovault = "0x0"
+cypheron = "0x0"

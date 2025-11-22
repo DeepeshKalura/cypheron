@@ -1,7 +1,5 @@
-module cryptovault::marketplace {
-    use sui::object::{Self, ID, UID};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+module cypheron::marketplace {
+
     use sui::event;
     use sui::coin::{Self, Coin};
     use sui::sui::SUI;
@@ -39,7 +37,7 @@ module cryptovault::marketplace {
     }
 
     // Admin Functions
-    public fun init(ctx: &mut TxContext) {
+    fun init(ctx: &mut TxContext) {
         let marketplace = Marketplace {
             id: object::new(ctx),
             owner: tx_context::sender(ctx),
@@ -50,7 +48,7 @@ module cryptovault::marketplace {
 
     // Seller Functions
     public fun list_dataset(
-        marketplace: &mut Marketplace,
+        _marketplace: &mut Marketplace,
         title: String,
         price: u64,
         data_hash: vector<u8>,

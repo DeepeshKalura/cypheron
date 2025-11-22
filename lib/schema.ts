@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, decimal, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uuid, integer, decimal, boolean, jsonb, pgEnum, unique } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
 // Enum for user roles
@@ -79,7 +79,9 @@ export const datasets = pgTable("datasets", {
   purchaseCount: integer("purchase_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-})
+}, (t) => [
+  unique("uniqueSellerTitle").on(t.sellerId, t.title)
+])
 
 // Transactions table
 export const transactions = pgTable("transactions", {

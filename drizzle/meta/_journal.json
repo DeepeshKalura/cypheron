@@ -15,6 +15,13 @@
       "when": 1763797497460,
       "tag": "0001_chunky_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763808309200,
+      "tag": "0002_little_lily_hollister",
+      "breakpoints": true
     }
   ]
 }

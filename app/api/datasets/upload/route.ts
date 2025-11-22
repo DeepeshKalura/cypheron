@@ -75,8 +75,15 @@ export async function POST(request: Request) {
       success: true,
       dataset: newDataset[0],
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error("[Upload Debug] CRITICAL ERROR:", error)
+
+    if (error.code === '23505') {
+      return NextResponse.json(
+        { error: "You already have a dataset with this title." },
+        { status: 409 }
+      )
+    }
     return NextResponse.json({ error: `Upload failed: ${(error as Error).message}` }, { status: 500 })
   }
 }

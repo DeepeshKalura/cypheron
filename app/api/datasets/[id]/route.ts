@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import { datasets, users } from "@/lib/schema"
+import { eq } from "drizzle-orm"
 
 export async function GET(
   request: NextRequest,
@@ -7,24 +10,33 @@ export async function GET(
   try {
     const { id } = await params
 
-    // Mock fetch single dataset
-    const dataset = {
-      id,
-      title: "Real-Time Stock Market Data",
-      description: "Live stock prices, volumes, and technical indicators for major exchanges.",
-      category: "Financial",
-      price: 499,
-      seller: "0xabc123...",
-      verified: true,
-      encrypted: true,
-      zkProofStatus: "verified",
-      downloads: 1204,
-      rating: 4.8,
-      views: 2847,
+    const result = await db
+      .select({
+        id: datasets.id,
+        title: datasets.title,
+        description: datasets.description,
+        category: datasets.category,
+        price: datasets.price,
+        sellerId: datasets.sellerId,
+        sellerName: users.name,
+        status: datasets.status,
+        verified: datasets.verified,
+        fileHash: datasets.fileHash,
+        createdAt: datasets.createdAt
+      })
+      .from(datasets)
+      .leftJoin(users, eq(datasets.sellerId, users.id))
+      .where(eq(datasets.id, id))
+      .limit(1)
+
+    if (!result.length) {
+      return NextResponse.json({ error: "Dataset not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ data: dataset })
+    return NextResponse.json({ data: result[0] })
+
   } catch (error) {
+    console.error("Fetch detail error:", error)
     return NextResponse.json({ error: "Dataset not found" }, { status: 404 })
   }
 }

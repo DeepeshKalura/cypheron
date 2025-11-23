@@ -178,7 +178,7 @@ export default function UploadPage() {
 
         // Find the object that was created
         const createdObject = txBlock.effects?.created?.[0]
-        const objectId = createdObject?.reference?.objectId
+        objectId = createdObject?.reference?.objectId
 
         if (!objectId) {
           throw new Error("Failed to retrieve Dataset Object ID from chain")

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -21,8 +21,8 @@ import {
 } from "lucide-react"
 
 // TODO: Fix this when Next.js 15 has better support for client component page props
-export default function DatasetDetailPage({ params }: any) {
-    const { id } = params
+export default function DatasetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [dataset, setDataset] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [toast, setToast] = useState<{ title: string, description: string, variant?: string } | null>(null)

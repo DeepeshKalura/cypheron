@@ -69,7 +69,6 @@ export function ZKVisualizer({ isGenerating, onComplete, className }: ZKVisualiz
                 if (prev >= 100) {
                     clearInterval(interval)
                     cancelAnimationFrame(animationFrameId)
-                    if (onComplete) onComplete()
                     return 100
                 }
 
@@ -87,7 +86,17 @@ export function ZKVisualizer({ isGenerating, onComplete, className }: ZKVisualiz
             clearInterval(interval)
             cancelAnimationFrame(animationFrameId)
         }
-    }, [isGenerating, onComplete])
+    }, [isGenerating])
+
+    useEffect(() => {
+        if (progress >= 100 && onComplete) {
+            // Add a small delay to ensure render cycle is complete
+            const timer = setTimeout(() => {
+                onComplete()
+            }, 0)
+            return () => clearTimeout(timer)
+        }
+    }, [progress, onComplete])
 
     if (!isGenerating && progress === 0) return null
 

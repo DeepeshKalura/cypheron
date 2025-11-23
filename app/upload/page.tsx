@@ -145,7 +145,7 @@ export default function UploadPage() {
       }
 
       let txDigest = ""
-      let objectId = ""
+      let objectId: string | undefined = ""
 
       try {
         const tx = new Transaction()

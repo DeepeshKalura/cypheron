@@ -64,12 +64,12 @@ export function DatasetCard({
             <p className="text-xs text-foreground/50">Price</p>
             <p className="text-xl font-bold text-primary">${price}</p>
           </div>
-          +         <Link href={`/datasets/${id}`}>
+          <Link href={`/datasets/${id}`}>
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Eye className="w-4 h-4 mr-2" />
               View
             </Button>
-            +         </Link>
+          </Link>
         </div>
       </div>
     </Card>

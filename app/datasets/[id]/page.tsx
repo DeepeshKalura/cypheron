@@ -20,7 +20,8 @@ import {
     TrendingUp
 } from "lucide-react"
 
-export default function DatasetDetailPage({ params }: { params: { id: string } }) {
+// TODO: Fix this when Next.js 15 has better support for client component page props
+export default function DatasetDetailPage({ params }: any) {
     const { id } = params
     const [dataset, setDataset] = useState<any>(null)
     const [loading, setLoading] = useState(true)

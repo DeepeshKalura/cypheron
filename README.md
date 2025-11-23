@@ -1,4 +1,4 @@
-# CryptoVault - Decentralized Data Marketplace
+# Cypheron - Decentralized Data Marketplace
 
 A blockchain-powered data marketplace built on Sui with zero-knowledge proofs, end-to-end encryption, and instant settlement.
 
@@ -32,14 +32,14 @@ A blockchain-powered data marketplace built on Sui with zero-knowledge proofs, e
 
 1. Clone this repository
 2. Install dependencies:
-   \`\`\`bash
+```bash
    npm install
-   \`\`\`
+```
 
 3. Create `.env.local` file from `.env.example`:
-   \`\`\`bash
+```bash
    cp .env.example .env.local
-   \`\`\`
+```
 
 4. Fill in your environment variables:
    - Sui RPC URL
@@ -51,15 +51,15 @@ A blockchain-powered data marketplace built on Sui with zero-knowledge proofs, e
 
 Run the development server:
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ### Project Structure
 
-\`\`\`
+```bash
 app/
 ├── page.tsx              # Homepage
 ├── marketplace/
@@ -82,7 +82,7 @@ components/
 ├── marketplace-filters.tsx  # Marketplace filters
 ├── upload-steps.tsx     # Upload wizard steps
 └── dashboard-stats.tsx  # Dashboard statistics
-\`\`\`
+```
 
 ## API Routes
 
